@@ -22,10 +22,14 @@
 
     export default {
         name: 'app',
+        data () {
+            return {
+                messageDiv: ''
+            }
+        },
         components: {
             User, UserText, Message, List, Notice
         },
-
         created: function () {
             let _this = this;
             let conn = new WebSocket('ws://127.0.0.1:9501');
@@ -77,7 +81,11 @@
                         _this.$store.dispatch('addUser', msg.data)
                         break;
                     case 'message':
-                        _this.$store.dispatch('addMessage', msg.data)
+                        _this.$store.dispatch('addMessage', msg.data).then(() => {
+                                    this.messageDiv = document.querySelector('.message');
+                                    this.messageDiv.scrollTop = this.messageDiv.scrollHeight + 10;
+                                }
+                        )
                         break;
                 }
             }
