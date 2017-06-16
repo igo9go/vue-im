@@ -6,6 +6,7 @@
  * Date: 2017/6/12
  * Time: 下午4:27
  */
+
 class webSocket
 {
     //小心类型
@@ -26,6 +27,8 @@ class webSocket
     {
         $this->createTable();
         $this->config = require_once(__DIR__ . "/config.php");
+        $this->avatars = $this->config['avatar'];
+        $this->nicknames = $this->config['nick_name'];
     }
 
     /**
@@ -52,11 +55,11 @@ class webSocket
      */
     public function open(swoole_websocket_server $server, swoole_http_request $req)
     {
-        $nickname = array_rand($this->config['avatar']);
-        $avatar = array_rand($this->config['nick_name']) . $req->fd;
+        $avatar = $this->avatars[array_rand($this->avatars)];
+        $nickname = $this->nicknames[array_rand($this->nicknames)];
         $user = [
             'fd' => $req->fd,
-            'nick_name' => $nickname,
+            'nickname' => $nickname,
             'avatar' => $avatar
         ];
         //记录数据
@@ -64,11 +67,11 @@ class webSocket
 
 
         //推送数据
-        $server->push($req->fd, json_encode(
-                array_merge(['user' => $user], ['all' => $this->allUser()], ['type' => 'openSuccess'])
-            )
-        );
-        $this->pushMessage($server, "欢迎" . $user['name'] . "进入聊天室", 'open', $request->fd);
+//        $server->push($req->fd, json_encode(
+//                array_merge(['user' => $user], ['all' => $this->allUser()], ['type' => 'openSuccess'])
+//            )
+//        );
+//        $this->pushMessage($server, "欢迎" . $user['name'] . "进入聊天室", 'open', $request->fd);
 
         //初始化自己的数据
         $userMsg = $this->formateMsg([
@@ -179,6 +182,14 @@ class webSocket
 
     private function formateMsg($data, $type, $status = 200)
     {
+        return json_encode([
+            'status' => $status,
+            'type' => $type,
+            'data' => $data
+        ]);
+    }
+
+    private function buildMsg($data,$type,$status = 200){
         return json_encode([
             'status' => $status,
             'type' => $type,
