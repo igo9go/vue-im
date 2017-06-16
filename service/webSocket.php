@@ -6,10 +6,9 @@
  * Date: 2017/6/12
  * Time: 下午4:27
  */
-
 class webSocket
 {
-    //小心类型
+    //消息类型
     const CONNECT_TYPE = 'connect';
     const DISCONNECT_TYPE = 'disconnect';
     const MESSAGE_TYPE = 'message';
@@ -58,20 +57,12 @@ class webSocket
         $avatar = $this->avatars[array_rand($this->avatars)];
         $nickname = $this->nicknames[array_rand($this->nicknames)];
         $user = [
-            'fd' => $req->fd,
+            'id' => $req->fd,
             'nickname' => $nickname,
             'avatar' => $avatar
         ];
         //记录数据
         $this->table->set($req->fd, $user);
-
-
-        //推送数据
-//        $server->push($req->fd, json_encode(
-//                array_merge(['user' => $user], ['all' => $this->allUser()], ['type' => 'openSuccess'])
-//            )
-//        );
-//        $this->pushMessage($server, "欢迎" . $user['name'] . "进入聊天室", 'open', $request->fd);
 
         //初始化自己的数据
         $userMsg = $this->formateMsg([
@@ -96,7 +87,7 @@ class webSocket
         ]);
 
         //broadcast a user is online
-        $msg = $this->buildMsg([
+        $msg = $this->formateMsg([
             'id' => $req->fd,
             'avatar' => $avatar,
             'nickname' => $nickname,
@@ -115,8 +106,8 @@ class webSocket
      */
     public function message(swoole_websocket_server $server, swoole_websocket_frame $frame)
     {
-        $receive = json_decode($frame->data,true);
-        $msg = $this->formateMsg($receive,self::MESSAGE_TYPE);
+        $receive = json_decode($frame->data, true);
+        $msg = $this->formateMsg($receive, self::MESSAGE_TYPE);
         $task = [
             'to' => [],
             'except' => [$frame->fd],
@@ -129,34 +120,38 @@ class webSocket
         $server->task($task);
     }
 
-    public function task($server, $task_id, $from_id, $data){
+    public function task($server, $task_id, $from_id, $data)
+    {
         $clients = $server->connections;
         if (count($data['to']) > 0) {
             $clients = $data['to'];
         }
         foreach ($clients as $fd) {
             if (!in_array($fd, $data['except'])) {
-                $this->server->push($fd,$data['data']);
+                $this->server->push($fd, $data['data']);
             }
         }
     }
 
-    public function close(swoole_websocket_server $server, $fd){
-        $this->table->del($fd);
+    public function close(swoole_websocket_server $server, $fd)
+    {
+        $user = $this->table->get($fd);
         $msg = $this->formateMsg([
             'id' => $fd,
+            'nickname' => $user['nickname'],
             'count' => count($this->table)
-        ],self::DISCONNECT_TYPE);
+        ], self::DISCONNECT_TYPE);
+        $this->table->del($fd);
         $this->server->task([
             'to' => [],
             'except' => [$fd],
             'data' => $msg
         ]);
-        //可以广播离开聊天室
     }
 
-    public function finish(){
-        //广播服务端关闭
+    public function finish()
+    {
+       echo 'disconnect';
     }
 
     /**
@@ -165,7 +160,7 @@ class webSocket
     private function createTable()
     {
         $this->table = new \swoole_table(1024);
-        $this->table->column('fd', \swoole_table::TYPE_INT);
+        $this->table->column('id', \swoole_table::TYPE_INT);
         $this->table->column('nickname', \swoole_table::TYPE_STRING, 64);
         $this->table->column('avatar', \swoole_table::TYPE_STRING, 255);
         $this->table->create();
@@ -182,14 +177,6 @@ class webSocket
 
     private function formateMsg($data, $type, $status = 200)
     {
-        return json_encode([
-            'status' => $status,
-            'type' => $type,
-            'data' => $data
-        ]);
-    }
-
-    private function buildMsg($data,$type,$status = 200){
         return json_encode([
             'status' => $status,
             'type' => $type,

@@ -34,7 +34,11 @@
             changeSession(userId){
                 if (typeof userId == 'number') {
                     this.$store.dispatch('selectSession', userId)
-                    this.$store.dispatch('setHasMessageStatus', userId, false)
+                    let data = {
+                        'userId': userId,
+                        'status': false
+                    }
+                    this.$store.dispatch('setHasMessageStatus', data)
                 }
             }
         }

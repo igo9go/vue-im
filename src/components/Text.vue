@@ -43,7 +43,11 @@
                     msg.is_self = 1;
                     _this.$store.dispatch('addMessage', msg)
                 }else{
-                    _this.$store.dispatch('showNotice', ' 消息不能为空!','warning')
+                    let data = {
+                        'msg':' 消息不能为空!',
+                        'type': 'warning'
+                    }
+                    _this.$store.dispatch('showNotice', data)
                 }
                 
             }

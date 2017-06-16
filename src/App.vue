@@ -31,26 +31,42 @@
             let conn = new WebSocket('ws://127.0.0.1:9501');
 
             conn.onopen = function (evt) {
-                _this.$store.dispatch('showNotice', ' 连接成功！', 'success')
+                let data = {
+                    'msg': ' 连接成功！',
+                    'type': 'success'
+                }
+                _this.$store.dispatch('showNotice', data)
                 _this.$store.dispatch('changeStatus', true)
             }
 
             conn.onclose = function (evt) {
-                _this.$store.dispatch('showNotice', ' 已断开连接！', 'error')
+                let data = {
+                    'msg': ' 已断开连接！',
+                    'type': 'error'
+                }
+                _this.$store.dispatch('showNotice', data)
                 _this.$store.dispatch('changeStatus', false)
             }
 
             conn.onmessage = function (evt) {
                 let msg = JSON.parse(evt.data);
-
                 switch (msg.type) {
                     case 'connect':
-                        console.log(msg.data);
                         _this.$store.dispatch('addUser', msg.data)
+                        var data = {
+                            'msg': msg.data.nickname + '已进入',
+                            'type': 'success'
+                        }
+                        _this.$store.dispatch('showNotice', data)
                         _this.$store.dispatch('setCount', msg.data.count)
                         break;
                     case 'disconnect':
                         _this.$store.dispatch('removeUser', msg.data.id)
+                        var data = {
+                            'msg': msg.data.nickname + '已离开',
+                            'type': 'warning'
+                        }
+                        _this.$store.dispatch('showNotice', data)
                         _this.$store.dispatch('setCount', msg.data.count)
                         break;
                     case 'self_init':
@@ -85,21 +101,22 @@
         flex-direction: row;
         border-radius: 3px;
 
-        .slide-bar, .main {
-            height: 100%;
-        }
+    .slide-bar, .main {
+        height: 100%;
+    }
 
-        .slide-bar {
-            width: 200px;
-            background: #2e3238;
-            color: #f4f4f4;
-        }
+    .slide-bar {
+        width: 200px;
+        background: #2e3238;
+        color: #f4f4f4;
+    }
 
-        .main {
-            width: 600px;
-            background: #eee;
-            display: flex;
-            flex-direction: column;
-        }
+    .main {
+        width: 600px;
+        background: #eee;
+        display: flex;
+        flex-direction: column;
+    }
+
     }
 </style>

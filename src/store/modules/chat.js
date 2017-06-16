@@ -81,7 +81,7 @@ const chat = {
         REMOVE_USER: (state, userId) => {
             state.users.forEach((item, index) => {
                 if (item.id == userId) {
-                    state.users.splice(item,1);
+                    state.users.splice(index,1);
                 }
             });
         },
@@ -142,8 +142,9 @@ const chat = {
 
         },
 
-        SET_HAS_MESSAGE: (state, userId, status) => {
-
+        SET_HAS_MESSAGE: (state, data) => {
+            let userId = data.userId
+            let status = data.status
             for (var i = state.users.length - 1; i >= 0; i--) {
                 if (status == false && state.users[i].id == userId || state.users[i].id == userId && state.currentSession.id != userId) {
                     state.users[i].has_message = status;
@@ -155,7 +156,9 @@ const chat = {
             state.currentCount = count;
         },
 
-        SHOW_NOTICE: (state, msg, type) => {
+        SHOW_NOTICE: (state, data) => {
+            let msg = data.msg
+            let type = data.type
             state.notice = {
                 show: true, msg, type
             }
@@ -202,21 +205,25 @@ const chat = {
         addMessage: ({commit}, message) => {
             if (message.is_self != 1) {
                 let userId = message.to == 0 ? 0 : message.from;
-                commit('SET_HAS_MESSAGE', userId, true);
+                let data = {
+                    'userId':userId,
+                    'status': true
+                }
+                commit('SET_HAS_MESSAGE', data);
             }
             commit('ADD_MESSAGE', message);
         },
 
-        setHasMessageStatus: ({commit}, userId, status) => {
-            commit('SET_HAS_MESSAGE', userId, status);
+        setHasMessageStatus: ({commit}, data) => {
+            commit('SET_HAS_MESSAGE', data);
         },
 
         setCount: ({commit}, count) => {
             commit('SET_COUNT', count);
         },
 
-        showNotice: ({commit}, msg, type) => {
-            commit('SHOW_NOTICE', msg, type);
+        showNotice: ({commit}, data) => {
+            commit('SHOW_NOTICE', data);
         }
 
     }
