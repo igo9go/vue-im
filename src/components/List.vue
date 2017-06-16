@@ -1,11 +1,11 @@
 <template>
     <div class="list">
         <ul>
-            <li v-for="user in users" v-bind:key="user.id" v-bind:id="user.id"
+            <li v-for="user in searchUser" v-bind:key="user.id" v-bind:id="user.id"
                 v-on:click="changeSession(user.id)">
                 <img v-bind:src="user.avatar" v-bind:alt="user.name">
                 <p>{{ user.nickname }} <span v-if="user.id == 0">({{ currentCount }})</span></p>
-                <div v-bind:class="[ user.has_message ? 'dot' : '' ]"></div>
+                <div v-bind:class="[user.has_message ? 'dot' : 'no' ]"></div>
             </li>
         </ul>
     </div>
@@ -19,9 +19,16 @@
             // 使用对象展开运算符将 getters 混入 computed 对象中
             ...mapGetters([
                 'currentCount',
+                'filterUser',
                 'users',
                 // ...
-            ])
+            ]),
+            searchUser: function () {
+                var self = this
+                return self.users.filter(function (user) {
+                    return user.nickname.indexOf(self.filterUser) !== -1
+                })
+            }
         },
         methods: {
             changeSession(userId){

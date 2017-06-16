@@ -27,7 +27,7 @@
 //                this.$store.dispatch('searchUser', e.target.value)
 //            }, 500)
             onKeyup (e) {
-                this.searchUser(e.target.value);
+                this.$store.dispatch('searchUser', e.target.value)
             }
         }
     }

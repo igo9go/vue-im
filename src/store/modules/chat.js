@@ -1,3 +1,4 @@
+import Vue from 'vue';
 
 const chat = {
     state: {
@@ -123,8 +124,7 @@ const chat = {
                 }
 
                 state.broadcast[0].push(msg);
-
-                state.broadcast.$set(0, state.broadcast[0]);
+                Vue.set(state.broadcast, 0, state.broadcast[0])
             } else {
                 if (message.is_self == 1) {
                     message.from = message.to;
@@ -137,7 +137,7 @@ const chat = {
 
                 state.broadcast[message.from].push(msg);
 
-                state.broadcast.$set(message.from, state.broadcast[message.from]);
+                Vue.set(state.broadcast, message.from, state.broadcast[message.from])
             }
 
         },
